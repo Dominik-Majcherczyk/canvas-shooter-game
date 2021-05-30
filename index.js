@@ -70,7 +70,7 @@ class Enemy {
 const x = canvas.width / 2;
 const y = canvas.height / 2;
 
-const player = new Player(x, y, 30, "blue");
+const player = new Player(x, y, 15, "#fff");
 
 const projectiles = [];
 const enemies = [];
@@ -105,13 +105,20 @@ let animationId;
 function animate() {
   //requestAnimationFrame is returning actual frame
   animationId = requestAnimationFrame(animate);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //rgba (transparet) will make smooth motion effect for objects
+  ctx.fillStyle = "rgba(0,0,0,0.1)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   player.draw();
   projectiles.forEach((projectile, projectileIndex) => {
     projectile.draw();
     projectile.update();
     //remove projectiles after screen edges
-    if (projectile.x - projectile.radius < 0) {
+    if (
+      projectile.x + projectile.radius < 0 ||
+      projectile.x - projectile.radius > canvas.width ||
+      projectile.y + projectile.radius < 0 ||
+      projectile.y - projectile.radius > canvas.height
+    ) {
       setTimeout(() => {
         projectiles.splice(projectileIndex, 1);
       }, 0);
@@ -146,12 +153,12 @@ window.addEventListener("click", (event) => {
     event.clientX - canvas.width / 2
   );
   const velocity = {
-    x: Math.cos(angle),
-    y: Math.sin(angle),
+    x: Math.cos(angle) * 4,
+    y: Math.sin(angle) * 4,
   };
 
   projectiles.push(
-    new Projectile(canvas.width / 2, canvas.height / 2, 5, "red", velocity)
+    new Projectile(canvas.width / 2, canvas.height / 2, 5, "#fff", velocity)
   );
 });
 
