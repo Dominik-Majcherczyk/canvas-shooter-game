@@ -107,9 +107,15 @@ function animate() {
   animationId = requestAnimationFrame(animate);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   player.draw();
-  projectiles.forEach((projectile) => {
+  projectiles.forEach((projectile, projectileIndex) => {
     projectile.draw();
     projectile.update();
+    //remove projectiles after screen edges
+    if (projectile.x - projectile.radius < 0) {
+      setTimeout(() => {
+        projectiles.splice(projectileIndex, 1);
+      }, 0);
+    }
   });
   enemies.forEach((enemy, index) => {
     enemy.draw();
