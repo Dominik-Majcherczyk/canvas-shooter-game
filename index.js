@@ -66,6 +66,34 @@ class Enemy {
   }
 }
 
+//PARTICLE
+class Particle {
+  constructor(x, y, radius, color, velocity) {
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+    this.color = color;
+    this.velocity = velocity;
+    this.alpha = 1;
+  }
+
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  update() {
+    this.x = this.x + this.velocity.x;
+    this.y = this.y + this.velocity.y;
+    this.alpha -= 0.01;
+  }
+}
+
 //REST
 const x = canvas.width / 2;
 const y = canvas.height / 2;
@@ -74,6 +102,7 @@ const player = new Player(x, y, 15, "#fff");
 
 const projectiles = [];
 const enemies = [];
+const particles = [];
 
 function spwawnEnemies() {
   setInterval(() => {
@@ -91,7 +120,7 @@ function spwawnEnemies() {
       y = Math.random() < 0.5 ? 0 - radius : canvas.height + radius;
     }
 
-    const color = "green";
+    const color = `hsl(${Math.random() * 360}, 50%, 50%)`;
     const angle = Math.atan2(canvas.height / 2 - y, canvas.width / 2 - x);
     const velocity = {
       x: Math.cos(angle),
@@ -102,6 +131,8 @@ function spwawnEnemies() {
 }
 
 let animationId;
+
+//ANIMATION LOOP
 function animate() {
   //requestAnimationFrame is returning actual frame
   animationId = requestAnimationFrame(animate);
@@ -109,6 +140,14 @@ function animate() {
   ctx.fillStyle = "rgba(0,0,0,0.1)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   player.draw();
+  particles.forEach((particle, index) => {
+    if (particle.alpha <= 0) {
+      particles.splice(index, 1);
+    } else {
+      particle.update();
+      particle.draw();
+    }
+  });
   projectiles.forEach((projectile, projectileIndex) => {
     projectile.draw();
     projectile.update();
@@ -138,10 +177,28 @@ function animate() {
       const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
       //when touch; set timeout is important coz of flashing objects after remove from array
       if (dist - enemy.radius - projectile.radius < 1) {
-        setTimeout(() => {
-          enemies.splice(index, 1);
-          projectiles.splice(projectileIndex, 1);
-        }, 0);
+        for (let i = 0; i < 8; i++) {
+          particles.push(
+            new Particle(projectile.x, projectile.y, 3, enemy.color, {
+              x: Math.random() - 0.5,
+              y: Math.random() - 0.5,
+            })
+          );
+        }
+
+        if (enemy.radius - 10 > 10) {
+          gsap.to(enemy, {
+            radius: enemy.radius - 10,
+          });
+          setTimeout(() => {
+            projectiles.splice(projectileIndex, 1);
+          }, 0);
+        } else {
+          setTimeout(() => {
+            enemies.splice(index, 1);
+            projectiles.splice(projectileIndex, 1);
+          }, 0);
+        }
       }
     });
   });
@@ -153,8 +210,8 @@ window.addEventListener("click", (event) => {
     event.clientX - canvas.width / 2
   );
   const velocity = {
-    x: Math.cos(angle) * 4,
-    y: Math.sin(angle) * 4,
+    x: Math.cos(angle) * 8,
+    y: Math.sin(angle) * 8,
   };
 
   projectiles.push(
