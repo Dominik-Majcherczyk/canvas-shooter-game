@@ -38,6 +38,7 @@ class Projectile {
   }
 
   update() {
+    this.draw();
     this.x = this.x + this.velocity.x;
     this.y = this.y + this.velocity.y;
   }
@@ -61,10 +62,13 @@ class Enemy {
   }
 
   update() {
+    this.draw();
     this.x = this.x + this.velocity.x;
     this.y = this.y + this.velocity.y;
   }
 }
+
+const friction = 0.99;
 
 //PARTICLE
 class Particle {
@@ -88,6 +92,9 @@ class Particle {
   }
 
   update() {
+    this.draw();
+    this.velocity.x *= friction;
+    this.velocity.y *= friction;
     this.x = this.x + this.velocity.x;
     this.y = this.y + this.velocity.y;
     this.alpha -= 0.01;
@@ -145,11 +152,9 @@ function animate() {
       particles.splice(index, 1);
     } else {
       particle.update();
-      particle.draw();
     }
   });
   projectiles.forEach((projectile, projectileIndex) => {
-    projectile.draw();
     projectile.update();
     //remove projectiles after screen edges
     if (
@@ -164,7 +169,6 @@ function animate() {
     }
   });
   enemies.forEach((enemy, index) => {
-    enemy.draw();
     enemy.update();
 
     const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y);
@@ -177,12 +181,19 @@ function animate() {
       const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
       //when touch; set timeout is important coz of flashing objects after remove from array
       if (dist - enemy.radius - projectile.radius < 1) {
-        for (let i = 0; i < 8; i++) {
+        //creating particles
+        for (let i = 0; i < enemy.radius * 2; i++) {
           particles.push(
-            new Particle(projectile.x, projectile.y, 3, enemy.color, {
-              x: Math.random() - 0.5,
-              y: Math.random() - 0.5,
-            })
+            new Particle(
+              projectile.x,
+              projectile.y,
+              Math.random() * 2,
+              enemy.color,
+              {
+                x: (Math.random() - 0.5) * (Math.random() * 6),
+                y: (Math.random() - 0.5) * (Math.random() * 6),
+              }
+            )
           );
         }
 
