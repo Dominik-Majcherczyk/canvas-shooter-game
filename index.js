@@ -103,6 +103,7 @@ function spwawnEnemies() {
 
 let animationId;
 function animate() {
+  //requestAnimationFrame is returning actual frame
   animationId = requestAnimationFrame(animate);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   player.draw();
@@ -117,10 +118,7 @@ function animate() {
     const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y);
     //end game
     if (dist - enemy.radius - player.radius < 1) {
-      setTimeout(() => {
-        enemies.splice(index, 1);
-        projectiles.splice(projectileIndex, 1);
-      }, 0);
+      cancelAnimationFrame(animationId);
     }
 
     projectiles.forEach((projectile, projectileIndex) => {
