@@ -226,7 +226,7 @@ window.addEventListener("click", (event) => {
   };
 
   projectiles.push(
-    new Projectile(canvas.width / 2, canvas.height / 2, 5, "#fff", velocity)
+    new Projectile(canvas.width / 2, canvas.height / 2, 5, "#17d637", velocity)
   );
 });
 
