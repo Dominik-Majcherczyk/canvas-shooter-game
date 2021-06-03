@@ -221,7 +221,7 @@ window.addEventListener("click", (event) => {
     event.clientX - canvas.width / 2
   );
   const velocity = {
-    x: Math.cos(angle) * 9,
+    x: Math.cos(angle) * 10,
     y: Math.sin(angle) * 9,
   };
 
