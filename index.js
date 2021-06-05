@@ -114,16 +114,6 @@ let projectiles = [];
 let enemies = [];
 let particles = [];
 
-function init() {
-  player = new Player(x, y, 15, "#fff");
-  projectiles = [];
-  enemies = [];
-  particles = [];
-  score = 0;
-  scoreEl.innerHTML = score;
-  scoreMenu.innerHTML = score;
-}
-
 function spwawnEnemies() {
   setInterval(() => {
     const radius = Math.random() * (30 - 4) + 4;
