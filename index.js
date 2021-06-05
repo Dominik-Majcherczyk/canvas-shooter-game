@@ -1,4 +1,8 @@
 const canvas = document.querySelector("canvas");
+const scoreEl = document.querySelector("#score");
+const startGameBtn = document.querySelector("#startGameBtn");
+const gameMenu = document.querySelector("#gameMenu");
+const scoreMenu = document.querySelector("#scoreMenu");
 const ctx = canvas.getContext("2d");
 canvas.width = innerWidth;
 canvas.height = innerHeight;
@@ -105,11 +109,20 @@ class Particle {
 const x = canvas.width / 2;
 const y = canvas.height / 2;
 
-const player = new Player(x, y, 15, "#fff");
+let player = new Player(x, y, 15, "#fff");
+let projectiles = [];
+let enemies = [];
+let particles = [];
 
-const projectiles = [];
-const enemies = [];
-const particles = [];
+function init() {
+  player = new Player(x, y, 15, "#fff");
+  projectiles = [];
+  enemies = [];
+  particles = [];
+  score = 0;
+  scoreEl.innerHTML = score;
+  scoreMenu.innerHTML = score;
+}
 
 function spwawnEnemies() {
   setInterval(() => {
@@ -138,6 +151,7 @@ function spwawnEnemies() {
 }
 
 let animationId;
+let score = 0;
 
 //ANIMATION LOOP
 function animate() {
@@ -175,6 +189,8 @@ function animate() {
     //end game
     if (dist - enemy.radius - player.radius < 1) {
       cancelAnimationFrame(animationId);
+      gameMenu.style.display = "flex";
+      scoreMenu.innerHTML = score;
     }
 
     projectiles.forEach((projectile, projectileIndex) => {
@@ -198,6 +214,9 @@ function animate() {
         }
 
         if (enemy.radius - 10 > 10) {
+          //increase score
+          score += 10;
+          scoreEl.innerHTML = score;
           gsap.to(enemy, {
             radius: enemy.radius - 10,
           });
@@ -205,6 +224,9 @@ function animate() {
             projectiles.splice(projectileIndex, 1);
           }, 0);
         } else {
+          //increase score
+          score += 20;
+          scoreEl.innerHTML = score;
           setTimeout(() => {
             enemies.splice(index, 1);
             projectiles.splice(projectileIndex, 1);
@@ -229,6 +251,3 @@ window.addEventListener("click", (event) => {
     new Projectile(canvas.width / 2, canvas.height / 2, 5, "#17d637", velocity)
   );
 });
-
-animate();
-spwawnEnemies();
