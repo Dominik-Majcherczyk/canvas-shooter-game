@@ -243,11 +243,18 @@ window.addEventListener("click", (event) => {
     event.clientX - canvas.width / 2
   );
   const velocity = {
-    x: Math.cos(angle) * 10,
+    x: Math.cos(angle) * 9,
     y: Math.sin(angle) * 9,
   };
 
   projectiles.push(
     new Projectile(canvas.width / 2, canvas.height / 2, 5, "#17d637", velocity)
   );
+});
+
+startGameBtn.addEventListener("click", () => {
+  init();
+  animate();
+  spwawnEnemies();
+  gameMenu.style.display = "none";
 });
