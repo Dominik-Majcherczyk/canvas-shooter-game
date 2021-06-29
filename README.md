@@ -13,7 +13,7 @@ Aplikacja posiada trzy główne klasy jakimi są:
 - Particle - odłamki powstałe w wyniku kolizji posicku i przeciwnika
 - Star - gwiazdy tworzące tło
 
-## struktura aplikacji
+# struktura aplikacji
 sekcja klas
 ```js
 class Player {
@@ -200,200 +200,176 @@ player.update();
 
 tworzenie przeciwników odbywa się wewnątrz funcji spawnEnemies()
 
+```js
+function spwawnEnemies() {
+  setInterval(() => {
+    const radius = Math.random() * (30 - 4) + 4;
+    //change to Math.random() * canvas.width for fully random
 
+    let x;
+    let y;
 
+    if (Math.random() < 0.5) {
+      x = Math.random() < 0.5 ? 0 - radius : canvas.width + radius;
+      y = Math.random() * canvas.height;
+    } else {
+      x = Math.random() * canvas.width;
+      y = Math.random() < 0.5 ? 0 - radius : canvas.height + radius;
+    }
 
+    const color = "#fff";
+    const angle = Math.atan2(canvas.height, canvas.width);
+    const velocity = {
+      x: Math.cos(angle),
+      y: Math.sin(angle),
+    };
+    enemies.push(new Enemy(x, y, radius, color, velocity));
+  }, 300);
+}
+```
+każdy nowy przeciwnik jest zapisywany do tablicy enemies co 300ms. Promień każdego przeciwnika jest losowy w wyznaczonym minimum oraz maksimum. Pozycja jest również losowa, istotnym jednak jest określenia aby była poza obszarem widzenia (dlatego dodajemy i odejmujemy promień).
 
-
-
-
-
-
-
-
-
-
-
-
-### State management
-
-State management for two or more views is handled by <a href="https://react-redux.js.org/introduction/getting-started">Redux</a> and <a href="https://redux.js.org/tutorials/essentials/part-5-async-logic#thunks-and-async-logic">Redux-thunk</a> for async logic, whose logic is located in the `/reducers` folder, and actions in `/actions` folder
-
-Root reducer consists of three reducers
+## tworzenie pocisków
 
 ```js
-const rootReducer = combineReducers({
-  citiesData: cityReducer,
-  cityWeatherInfo: cityWeatherInfoReducer,
-  cityName: cityNameReducer,
+window.addEventListener("click", (event) => {
+  const angle = Math.atan2(
+    event.clientY - canvas.height / 2,
+    event.clientX - canvas.width / 2
+  );
+  const velocity = {
+    x: 0,
+    y: -9,
+  };
+
+  projectiles.push(new Projectile(player.x, player.y, 5, "#17d637", velocity));
 });
 ```
+Pociski są tworzone w momencie eventu kliknięcia myszy. Każdy pocisk jest zapisywany do tablicy z której jest usuwany po wykryciu kolicji z przeciwnikiem. Kazdy pocik jest tworzony w aktualnych współrzędnych gracza.
 
-- citiesData stores and updates cities shown during search,
-- cityName stores and updates city name and key (needed to gather data for a given location - weather and forecasts) when you have selected a new location,
-- cityWeatherInfo stores and updates weather data for weatherDashboard component.
+## kolizje
 
-### Layout
+Kolizje możemy podzielić na dwa rodzaje: pocisk-przeciwnik, gracz-przeciwnik
 
-For the appearance of the application were used the <a href="https://callstack.github.io/react-native-paper/getting-started.html">React-native-paper<a/> library with <a href="https://github.com/satya164/react-native-tab-view">React-native-tab-view</a> and manually created styles with css. Css was implemented in the form of javascript objects, because only this form of styling is allowed in react-native.
-Sample of css styling:
+### pocisk-przeciwnik
 
 ```js
-  import { View, StyleSheet } from "react-native";
-  {...}
-  <View style={styles.container}>
-  {...}
-  const styles = StyleSheet.create({
-  container: {
-    flex: 2,
-    flexDirection: "column",
-    backgroundColor: "#6d93cc",
-  },
+    projectiles.forEach((projectile, projectileIndex) => {
+      const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
+      //when touch; set timeout is important coz of flashing objects after remove from array
+      if (dist - enemy.radius - projectile.radius < 1) {
+        //creating particles
+        for (let i = 0; i < enemy.radius * 2; i++) {
+          particles.push(
+            new Particle(
+              projectile.x,
+              projectile.y,
+              Math.random() * 2,
+              enemy.color,
+              {
+                x: (Math.random() - 0.5) * (Math.random() * 6),
+                y: (Math.random() - 0.5) * (Math.random() * 6),
+              }
+            )
+          );
+        }
+
+        if (enemy.radius - 10 > 10) {
+          //increase score
+          score += 10;
+          scoreEl.innerHTML = score;
+          gsap.to(enemy, {
+            radius: enemy.radius - 10,
+          });
+          setTimeout(() => {
+            projectiles.splice(projectileIndex, 1);
+          }, 0);
+        } else {
+          //increase score for bigger enemy
+          score += 20;
+          scoreEl.innerHTML = score;
+          setTimeout(() => {
+            enemies.splice(index, 1);
+            projectiles.splice(projectileIndex, 1);
+          }, 0);
+        }
+      }
+    });
+```
+
+Odległość pomiędzy pociskiem i przeciwnikiem jest obliczana za pomocą metody hypot (twierdzenie pitagorasa) 
+W momencie kiedy dystans wyniesie 0, tworzone są particle (odłamki), pocisk jest usuwany z tablicy, oraz dodawany jest wynik - score w zależności od wielkości trafionego przeciwnika.
+
+#### Tworzenie odłamków
+
+```js
+         particles.push(
+            new Particle(
+              projectile.x,
+              projectile.y,
+              Math.random() * 2,
+              enemy.color,
+              {
+                x: (Math.random() - 0.5) * (Math.random() * 6),
+                y: (Math.random() - 0.5) * (Math.random() * 6),
+              }
+            )
+          );
+```
+
+odłamki tworzone w trakcie kolizji posiadają losową wielkość oraz kierunek, za współrzędne przyjmuje się współrzędne pocisku.
+
+### gracz-przeciwnik
+
+```js
+  const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y);
+    //end game
+    if (dist - enemy.radius - player.radius < 1) {
+      cancelAnimationFrame(animationId);
+      gameMenu.style.display = "flex";
+      scoreMenu.innerHTML = score;
+    }
+```
+Odległość pomiędzy graczem i przeciwnikiem jest obliczana dokładnie tak samo jak pocisk-przeciwnik. W momencie kolizji jest anulowana klatka animacji oraz wyświetlone zostaje wcześniej ukryte menu gry z wynikiem.
+
+
+## tło
+
+tło jest stworzone za pomocą gradientu
+
+
+```js
+const backgroundGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+backgroundGradient.addColorStop(0, "#171e26");
+backgroundGradient.addColorStop(1, "#3f586b");
+```
+
+oraz gwiazd stworzonych w oparciu o klasę Star
+
+```js
+backgroundStars = [];
+  for (let i = 0; i < 150; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const radius = Math.random() * 3;
+    backgroundStars.push(new Star(x, y, radius, "#E3EAEF"));
   }
 ```
 
-### In-depth look into used components
+## punkty
 
-#### `App.js`
-
-The App component contains the <a href="https://callstack.github.io/react-native-paper/bottom-navigation.html">BottomNavigation</a> element from the React-native-paper library. This element has its own routing that accepts components that are referenced in the bottom navigation of the application.
+punkty są dodawane za każdym razem kiedy pocisk dotknie gracza, w zależności od promienia jest przyznawana inna ilość punktów.
 
 ```js
-const SearchingRoute = () => <Searching setIndex={setIndex} />;
-const FavouritesRoute = () => <Favourites setIndex={setIndex} />;
-const InfoPanelRoute = () => <InfoPanel />;
-```
-
-In this case, the Searching and Favourites components have additional `setIndex` prop, because in these two components you can select the location for which you want to display the data in InfoPanel (by using `fetchUserLocationInfo(lattitude, longtitude)` function) which have index of 0. `setIndex` in this case it acts as a redirect which sets the index to 0.
-
-```js
-const fetchUserLocationInfo = async (lat, lon) => {
-  await fetch(
-    `http://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${apikey}&q=${lat}%2C${lon}`
-  )
-    .then((res) => res.json())
-    .then((city) => {
-      dispatch(findCityWeatherInfo(city.Key));
-      dispatch(
-        setCity({
-          cityName: city.LocalizedName,
-          cityKey: city.Key,
-        })
-      );
-    })
-    .then(setIndex(0))
-    .catch((error) => console.log(error));
-};
-```
-
-It also has an element <a href="https://callstack.github.io/react-native-paper/appbar.html">appbar</a> that as an application header.
-
-#### `Searching.js`
-
-The location finder component, has an "Input" for entering a city name. The request is sent each time the value changes. Cities are displayed using the AccuWeather <a href="https://developer.accuweather.com/accuweather-locations-api/apis/get/locations/v1/cities/autocomplete">Autocomplete search</a> API, so you don't have to type in the whole name to see the names of cities you might be looking for.
-It also has a geolocation function, by pressing a button you can instantly redirect into weather display for current location.
-
-```js
-import Geolocation from "@react-native-community/geolocation";
-{...}
-  const findCoordinates = () => {
-    Geolocation.getCurrentPosition(
-      (position) => {
-        fetchUserLocationInfo(
-          position.coords.latitude,
-          position.coords.longitude
-        );
-      },
-      (error) => Alert.alert(error.message),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-    );
-  };
-```
-
-#### `Favourites.js`
-
-Component displaying all cities saved in <a href="https://react-native-async-storage.github.io/async-storage/docs/install/">async storage</a>. The component retrieves all cities keys from storage and stores them in its local state `keys`. Values are read for all keys and written to the state `favs`.
-
-```js
-const getValuesForKeys = async () => {
-  let values;
-  try {
-    values = await AsyncStorage.multiGet(keys);
-  } catch (e) {
-    console.log(e);
-  }
-  setFavs(values);
-};
-```
-
-Each favorite location has options to delete from storage, and redirect to the InfoPanel component to gather and display the data again.
-
-#### `InfoPanel.js`
-
-InfoPanel contains a <a href="https://github.com/satya164/react-native-tab-view">TabView<a/> element that has its own built-in routing.
-
-```js
-const FirstRoute = () => <Weather />;
-
-const SecondRoute = () => <ThisWeekForecast />;
-
-const ThirdRoute = () => <TodayForecast />;
-```
-
-`Lazy loading`
-Callback which returns a custom React Element to render for routes that haven't been rendered yet. Receives an object containing the route as the argument. The lazy prop also needs to be enabled.
-
-```js
-const LazyPlaceholder = ({ route }) => (
-  <View style={styles.loading}>
-    <ActivityIndicator animating={true} color={Colors.red800} />
-  </View>
-);
-```
-
-#### `Weather.js`
-
-Component that retrieves and displays data from the global state.cityWeatherInfo and the city name and key from state.cityName.
-
-###### Saving favourite
-
-It also has a button that can add the currently set city in state.cityName to the async storge as a favorite.
-
-```js
-const addFavourite = () => {
-  storeData(cityName);
-};
-
-const storeData = async (value) => {
-  try {
-    await AsyncStorage.setItem(`${cityName.cityName}`, JSON.stringify(value));
-  } catch (e) {
-    console.log("error while saving fav zone");
-  }
-};
-```
-
-#### `TodayForecast.js` & `ThisWeekForecast`
-
-Both components are very similar. They retrieve the current city name and key from the global application state and then send requests to the AccuWeather api to retrieve the forecast object (<a href="https://developer.accuweather.com/accuweather-forecast-api/apis/get/forecasts/v1/hourly/12hour/%7BlocationKey%7D">12-hour</a> and <a href="https://developer.accuweather.com/accuweather-forecast-api/apis/get/forecasts/v1/daily/5day/%7BlocationKey%7D">5-day</a>).
-
-```js
-  const fetchForecast = async (cityKey) => {
-    await fetch(
-      `http://dataservice.accuweather.com/forecasts/v1/daily/5day/${cityKey}?apikey=${apikey}`
-                                             OR
-      `http://dataservice.accuweather.com/forecasts/v1/daily/5day/${cityKey}?apikey=${apikey}`
-    )
-      .then((res) => res.json())
-      .then((data) => setForecast(data))
-      .catch(() => console.log("error in fetching forecast"));
-  };
-```
-
-each table element from the forecast object is mapped to display information.
-
-```js
- forecast.DailyForecasts.map((day) => {...})
-               OR
- forecast.map((hour) => {...})
+  if (enemy.radius - 10 > 10) {
+          //increase score
+          score += 10;
+          scoreEl.innerHTML = score;
+          ...
+        } else {
+          //increase score for bigger enemy
+          score += 20;
+          scoreEl.innerHTML = score;
+          ...
+        }
 ```
