@@ -3,9 +3,9 @@
 
 ## struktura aplikacji
 
-### Obiekty
+### Klasy
 
-Aplikacja posiada trzy główne obiekty jakimi są:
+Aplikacja posiada trzy główne klasy jakimi są:
 
 - Player - obiekt odpowiadający za gracza
 - Enemy - na jego podstawie są generowani przeciwnicy - spadające gwiazdy
@@ -14,7 +14,7 @@ Aplikacja posiada trzy główne obiekty jakimi są:
 - Star - gwiazdy tworzące tło
 
 ## struktura aplikacji
-sekcja obiektów
+sekcja klas
 ```js
 class Player {
   constructor(x, y, radius) {
@@ -166,17 +166,39 @@ class Particle {
   }
 }
 ```
-## struktura obiektów
+## struktura klas
 
 Każdy z obiektów posiada swoje właściwości oraz dwie metody  - draw() oraz update()
 
 Metoda draw służy do 'narysowania' czyli stworzenia obiektu (kształtu) w elemencie canvas, w naszym przypadku wszsystkie obiekty są okręgami dlatego każdy obiekt
-jest tworzony w opraciu o metodę arc(x, y, promień, kąt rozpoczęcia, kąt zakończenia). Opcjonalnie w niektórych obiektach pojawia się metoda shadowblur() 
-towrząca poświatę wokół obiektu. Dodatkowo w obiekcie Particle pojawia się współczynnik alfa który służy do zanikania obiektów.
+jest tworzony w opraciu o metodę arc(x, y, promień, kąt rozpoczęcia, kąt zakończenia). Opcjonalnie w niektórych klasach pojawia się metoda shadowblur() 
+towrząca poświatę wokół obiektu. Dodatkowo w klasie Particle pojawia się współczynnik alfa który służy do zanikania obiektów.
 
 Metoda update() jest wywoływana w każdej pojedynczej klatce renderu elementu canvas. Jej głównym zastosowaniem jest wywoływanie metody draw()
-i zmiana parametrów pozycji w oparciu o wartość velocity (prędkość, im wyższa wartość velocity tym 'szybciej' będzie się poruszać obiekt) obiektu tak aby stworzyć animacje ruchu.
-Obiekty Player oraz Star nie posiadają zmiany wartości velocity, ponieważ instancja obiektu Player zawszę podąża za kursorem muszy, a instacje obieku Star to statyczne obiekty tworzące tło.
+i zmiana parametrów pozycji w oparciu o wartość velocity (prędkość, im wyższa wartość velocity tym 'szybciej' będzie się poruszać obiekt) klasy tak aby stworzyć animacje ruchu.
+KLasy Player oraz Star nie posiadają zmiany wartości velocity, ponieważ instancja klasy Player zawszę podąża za kursorem muszy, a instacje klasy Star to statyczne obiekty tworzące tło.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### State management
 
