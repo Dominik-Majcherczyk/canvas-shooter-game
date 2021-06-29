@@ -178,12 +178,27 @@ Metoda update() jest wywoływana w każdej pojedynczej klatce renderu elementu c
 i zmiana parametrów pozycji w oparciu o wartość velocity (prędkość, im wyższa wartość velocity tym 'szybciej' będzie się poruszać obiekt) klasy tak aby stworzyć animacje ruchu.
 KLasy Player oraz Star nie posiadają zmiany wartości velocity, ponieważ instancja klasy Player zawszę podąża za kursorem muszy, a instacje klasy Star to statyczne obiekty tworzące tło.
 
+## tworzenie gracza oraz aktualizacja pozycji
 
 
+```js
+let player = new Player(x, y, 15);
+```
 
+Tworzenie instacji gracza znajduje się w segmencie inicjacji zmiennych, stałych oraz obiektów.
+Gracza tworzymy poprzez podanie współrzędnych x, y oraz promienia określającego jego wielkość.
 
+Gracz porusza się za kursorem myszy, aby było to możliwe wewnątrz funcji animate() jego współrzędne są podmieniane na współrzędne kursora myszy oraz jest wywoływana metoda update() aby narysować gracza w nowej pozycji
 
+```js
+player.x = mouse.x;
+player.y = mouse.y;
+player.update();
+```
 
+## tworzenie przeciwników
+
+tworzenie przeciwników odbywa się wewnątrz funcji spawnEnemies()
 
 
 
